@@ -201,6 +201,18 @@ textarea{min-height:96px;resize:vertical}
 dialog .totop{position:absolute}
 @media(prefers-reduced-motion:reduce){.totop{transition:none}}
 </style>
+<style>/* 신청 완료 팝업 */
+#okDlg{width:min(420px,90vw);height:fit-content;max-height:90vh;margin:auto;padding:0;border:0;background:var(--bg);color:var(--ink);text-align:center}
+#okDlg[open]{display:block}
+#okDlg::backdrop{background:rgba(20,24,28,.6)}
+#okDlg .in{padding:36px 28px 28px}
+#okDlg .ic{width:56px;height:56px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;font-size:26px;background:#49d5e4;color:#14181c}
+#okDlg.bad .ic{background:#c2343f;color:#fff}
+#okDlg h3{font-family:"Noto Serif KR",serif;font-weight:400;font-size:21px;margin:0 0 10px}
+#okDlg p{color:var(--soft);font-size:14px;line-height:1.8}
+#okDlg p a{color:var(--ink);font-weight:500}
+#okDlg button{margin-top:22px;min-height:46px;padding:0 36px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);font:inherit;font-size:15px;cursor:pointer}
+</style>
 </head>
 <body>
 <header>
@@ -245,6 +257,7 @@ dialog .totop{position:absolute}
   <div class="strip" id="strip"></div>
   <button type="button" class="totop" id="lbTop" aria-label="사진 맨 위로">↑</button>
 </dialog>
+<dialog id="okDlg" aria-labelledby="okT"><div class="in"><div class="ic" id="okI">✓</div><h3 id="okT"></h3><p id="okP"></p><button type="button" id="okX" autofocus>확인</button></div></dialog>
 <button type="button" class="totop" id="pgTop" aria-label="맨 위로">↑</button>
 
 <section class="sec" id="practice" style="background:var(--faint)">
@@ -476,9 +489,13 @@ form.addEventListener("submit",e=>{e.preventDefault();
   const body=new URLSearchParams({form:"homepage-consult",name:nm,phone:document.getElementById("ph").value.trim(),
     kind:(form.querySelector("input[name=k]:checked")||{}).value||"",area:document.getElementById("ar").value.trim(),
     budget:document.getElementById("bd").value,message:document.getElementById("ms").value.trim(),website:document.getElementById("hpw").value});
-  const done=(ok)=>{btn.disabled=false;btn.textContent="신청하기";const d=document.createElement("p");d.className="msg"+(ok?"":" err");
-    d.textContent=ok?nm+"님, 상담 신청이 접수되었습니다. 곧 연락드리겠습니다.":"전송이 잘 되지 않았습니다. 0507-1328-0798로 전화 주시면 바로 상담해 드립니다.";
-    form.prepend(d);if(ok){form.reset();}};
+  const done=(ok)=>{btn.disabled=false;btn.textContent="신청하기";
+    const g=document.getElementById("okDlg");g.classList.toggle("bad",!ok);
+    document.getElementById("okI").textContent=ok?"✓":"!";
+    document.getElementById("okT").textContent=ok?"상담 신청이 접수되었습니다":"전송이 잘 되지 않았습니다";
+    document.getElementById("okP").innerHTML=ok?nm.replace(/[<>&"]/g,"")+"님, 남겨 주신 연락처로<br>담당자가 곧 연락드리겠습니다.<br><br>급하시면 <a href=\"tel:050713280798\">0507-1328-0798</a>":"잠시 후 다시 시도하시거나<br><a href=\"tel:050713280798\">0507-1328-0798</a>로 전화 주시면<br>바로 상담해 드립니다.";
+    g.showModal();if(ok){form.reset();}};
+  document.getElementById("okX").onclick=()=>document.getElementById("okDlg").close();
   fetch("https://script.google.com/macros/s/AKfycbzjXqYyr-AZDYPn_HrnWZD7F3Fi7PwwAit99R2KV6qk-hzvJNPyYjzkPzloCvuxXmW1/exec",{method:"POST",mode:"no-cors",body}).then(()=>done(true)).catch(()=>done(false));});
 
 const mq=matchMedia("(prefers-color-scheme: dark)");mq.addEventListener?.("change",()=>draw());
