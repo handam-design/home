@@ -194,6 +194,13 @@ textarea{min-height:96px;resize:vertical}
 .strip4 figcaption{font-size:12px;color:var(--soft);padding-top:8px}
 @media(max-width:800px){.big .row{grid-template-columns:1fr}.big .row a{justify-self:start}.strip4{grid-template-columns:1fr 1fr}.cta{display:none}}
 </style>
+<style>/* 맨 위로 버튼 */
+.totop{position:fixed;right:max(16px,2vw);bottom:max(16px,2vw);z-index:40;width:48px;height:48px;border-radius:50%;border:1px solid var(--ink);background:var(--bg);color:var(--ink);font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center;opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .25s,transform .25s,visibility .25s;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.totop.on{opacity:1;visibility:visible;transform:none}
+.totop:hover{background:var(--ink);color:var(--bg)}
+dialog .totop{position:absolute}
+@media(prefers-reduced-motion:reduce){.totop{transition:none}}
+</style>
 </head>
 <body>
 <header>
@@ -236,7 +243,9 @@ textarea{min-height:96px;resize:vertical}
 <dialog id="lb" aria-label="작업 사진">
   <div class="lbh"><div><b id="lbT"></b><span id="lbD"></span><a id="lbU" href="#">현장 자세히 보기 →</a></div><button type="button" id="lbX" aria-label="닫기">닫기</button></div>
   <div class="strip" id="strip"></div>
+  <button type="button" class="totop" id="lbTop" aria-label="사진 맨 위로">↑</button>
 </dialog>
+<button type="button" class="totop" id="pgTop" aria-label="맨 위로">↑</button>
 
 <section class="sec" id="practice" style="background:var(--faint)">
   <div class="wrap">
@@ -467,6 +476,15 @@ form.addEventListener("submit",e=>{e.preventDefault();
 const mq=matchMedia("(prefers-color-scheme: dark)");mq.addEventListener?.("change",()=>draw());
 new MutationObserver(()=>{draw();}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 }
+
+/* back to top */
+(()=>{const pg=document.getElementById("pgTop"),lt=document.getElementById("lbTop"),st=document.getElementById("strip");
+const sm=matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth";
+addEventListener("scroll",()=>pg.classList.toggle("on",scrollY>innerHeight*.8),{passive:true});
+pg.onclick=()=>scrollTo({top:0,behavior:sm});
+st.addEventListener("scroll",()=>lt.classList.toggle("on",st.scrollTop>innerHeight*.6),{passive:true});
+lt.onclick=()=>st.scrollTo({top:0,behavior:sm});
+document.getElementById("lb").addEventListener("close",()=>lt.classList.remove("on"));})();
 </script>
 </body>
 </html>
