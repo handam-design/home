@@ -306,7 +306,8 @@ dialog .totop{position:absolute}
       <label class="agree f full"><input type="checkbox" id="ag">개인정보 수집·이용에 동의합니다 (상담 목적, 상담 후 1년 보관)</label>
       <p class="err f full" id="err" hidden></p>
       <button class="send" type="submit">신청하기</button>
-      <p class="small f full">시안이라 신청 내용은 아직 실제로 전송되지 않습니다.</p>
+      <p class="small f full">남겨 주신 연락처로 담당자가 연락드립니다. 급하시면 0507-1328-0798로 전화 주세요.</p>
+      <input type="text" name="website" id="hpw" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
     </form>
   </div>
 </section>
@@ -471,7 +472,14 @@ form.addEventListener("submit",e=>{e.preventDefault();
   const miss=[];if(!nm)miss.push("이름");if(ph.length<9)miss.push("연락처");if(!document.getElementById("ag").checked)miss.push("개인정보 동의");
   if(miss.length){err.hidden=false;err.textContent=miss.join(", ")+" 항목을 확인해 주세요.";return;}
   err.hidden=true;form.querySelector(".msg")?.remove();
-  const d=document.createElement("p");d.className="msg";d.textContent=nm+"님, 신청 내용이 확인되었습니다. (시안이라 실제로 전송되지는 않았습니다.)";form.prepend(d);});
+  const btn=form.querySelector(".send");if(btn.disabled)return;btn.disabled=true;btn.textContent="보내는 중…";
+  const body=new URLSearchParams({form:"homepage-consult",name:nm,phone:document.getElementById("ph").value.trim(),
+    kind:(form.querySelector("input[name=k]:checked")||{}).value||"",area:document.getElementById("ar").value.trim(),
+    budget:document.getElementById("bd").value,message:document.getElementById("ms").value.trim(),website:document.getElementById("hpw").value});
+  const done=(ok)=>{btn.disabled=false;btn.textContent="신청하기";const d=document.createElement("p");d.className="msg"+(ok?"":" err");
+    d.textContent=ok?nm+"님, 상담 신청이 접수되었습니다. 곧 연락드리겠습니다.":"전송이 잘 되지 않았습니다. 0507-1328-0798로 전화 주시면 바로 상담해 드립니다.";
+    form.prepend(d);if(ok){form.reset();}};
+  fetch("https://script.google.com/macros/s/AKfycbzjXqYyr-AZDYPn_HrnWZD7F3Fi7PwwAit99R2KV6qk-hzvJNPyYjzkPzloCvuxXmW1/exec",{method:"POST",mode:"no-cors",body}).then(()=>done(true)).catch(()=>done(false));});
 
 const mq=matchMedia("(prefers-color-scheme: dark)");mq.addEventListener?.("change",()=>draw());
 new MutationObserver(()=>{draw();}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
